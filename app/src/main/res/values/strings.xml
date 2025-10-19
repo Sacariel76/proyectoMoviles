@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">proyectoMovil</string>
+    <string name="ErrorMsgAdd">Error al agregar un libro</string>
+    <string name="ErrorMsgUpdate">Error al actualizar el libro</string>
+    <string name="ErrorMsgRemove">Error al remover el libro</string>
+    <string name="ErrorMsgGetAll">Error al obtener la lista de datos</string>
+    <string name="ErrorMsgGetById">Error al obtener un dato especifico</string>
+    <string name="ErrorMsgGetByAuthor">Error al obtener libro por autor</string>
+    <string name="MsgDataNotFound">El libro no fue encontrado</string>
+</resources>
