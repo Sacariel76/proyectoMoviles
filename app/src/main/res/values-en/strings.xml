@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">proyectoMovil</string>
+    <string name="ErrorMsgAdd">Error when adding a book</string>
+    <string name="ErrorMsgUpdate">Error when updating a book</string>
+    <string name="ErrorMsgRemove">Error when removing a book</string>
+    <string name="ErrorMsgGetAll">Error when getting book list</string>
+    <string name="ErrorMsgGetById">Error when getting specific book</string>
+    <string name="ErrorMsgGetByAuthor">Error when getting a book for author</string>
+    <string name="MsgDataNotFound">The book was not found</string>
+</resources>
