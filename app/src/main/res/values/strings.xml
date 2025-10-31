@@ -7,4 +7,13 @@
     <string name="ErrorMsgGetById">Error al obtener un dato especifico</string>
     <string name="ErrorMsgGetByAuthor">Error al obtener libro por autor</string>
     <string name="MsgDataNotFound">El libro no fue encontrado</string>
+    <string name="txtBookName">Nombre del libro</string>
+    <string name="txtAuthor">Nombre del autor</string>
+    <string name="txtPublishYear">Año de publicación</string>
+    <string name="txtImage">Imagen</string>
+    <string name="btnRegistrar">Registrar libro</string>
+    <string name="btnUpdateBook">Modificar libro</string>
+    <string name="btnBorrar">Borrar libro</string>
+    <string name="btnVer">Libros</string>
+    <string name="btnRegistrarLibro">Registrar libro</string>
 </resources>

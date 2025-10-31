@@ -1,6 +1,9 @@
 package com.example.proyectomovil
 
+import Util.Util
 import android.os.Bundle
+import android.view.View
+import android.widget.Button
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -16,5 +19,10 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+        val btnNewScreen = findViewById<Button>(R.id.btnIngresar)
+        btnNewScreen.setOnClickListener(View.OnClickListener { view ->
+            Util.openActivity(this, RegisterBooksActivity:: class.java)
+        })
     }
 }

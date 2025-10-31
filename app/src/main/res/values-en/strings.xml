@@ -8,4 +8,13 @@
     <string name="ErrorMsgGetById">Error when getting specific book</string>
     <string name="ErrorMsgGetByAuthor">Error when getting a book for author</string>
     <string name="MsgDataNotFound">The book was not found</string>
+    <string name="txtBookName">Book´s name</string>
+    <string name="txtAuthor">Author´s name</string>
+    <string name="txtPublishYear">Publish year</string>
+    <string name="txtImage">Imagen</string>
+    <string name="btnRegistrar">Add  book</string>
+    <string name="btnUpdateBook">Update book</string>
+    <string name="btnBorrar">Delete book</string>
+    <string name="btnVer">Books</string>
+    <string name="btnRegistrarLibro">Add book</string>
 </resources>

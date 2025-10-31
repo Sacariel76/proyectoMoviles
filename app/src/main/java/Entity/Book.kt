@@ -10,7 +10,10 @@ class Book {
     private lateinit var publishYear: Date
     private var author: String = ""
     private var status: Boolean = true
-    private var image: Bitmap?
+    private var image: Bitmap? = null
+
+    constructor()
+
 
     constructor(id: String, name: String, publishYear: Date, author: String,
                 status: Boolean, image: Bitmap?)
