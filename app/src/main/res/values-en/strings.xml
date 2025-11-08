@@ -17,4 +17,19 @@
     <string name="btnBorrar">Delete book</string>
     <string name="btnVer">Books</string>
     <string name="btnRegistrarLibro">Add book</string>
+    <string name="txtCountry">Country</string>
+    <string name="txtGenre">Genre</string>
+    <string name="txtId">ID</string>
+    <string name="TextYes">Yes</string>
+    <string name="TextNo">No</string>
+    <string name="TextTitleDialogQuestion">Question...</string>
+    <string name="MsgSaveSuccess">Book added succesfully</string>
+    <string name="MsgDuplicateData">Duplicated book</string>
+    <string name="ErrorMsgGetByName">Error when getting a book by name</string>
+    <string name="ErrorMsgGetByGenre">Error when getting a book by genre</string>
+    <string name="ErrorMsgGetByCountry">Error when getting a book by country</string>
+    <string name="txtStatus">Status</string>
+    <string name="MsgUpdateSucces">Book was updated succesfully</string>
+    <string name="MsgDeleteSuccess">Book was deleted succesfully</string>
+    <string name="TextDeleteQuestion">Do you want to delete the book?</string>
 </resources>

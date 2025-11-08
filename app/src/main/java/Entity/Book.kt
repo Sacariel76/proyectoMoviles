@@ -2,26 +2,32 @@ package Entity
 
 import android.graphics.Bitmap
 import java.sql.Date
+import java.time.LocalDate
 
 class Book {
 
     private var id: String = ""
     private var name: String = ""
-    private lateinit var publishYear: Date
+    private lateinit var publishYear: LocalDate
     private var author: String = ""
+    private var genre: String = ""
+    private var country: String = ""
     private var status: Boolean = true
     private var image: Bitmap? = null
 
     constructor()
 
 
-    constructor(id: String, name: String, publishYear: Date, author: String,
+    constructor(id: String, name: String, publishYear: LocalDate, author: String,
+                country: String, genre: String,
                 status: Boolean, image: Bitmap?)
     {
         this.id = id
         this.name = name
         this.publishYear = publishYear
         this.author = author
+        this.genre = genre
+        this.country = country
         this.status = status
         this.image = image
     }
@@ -34,13 +40,21 @@ class Book {
         get() = this.name
         set(value) {this.name = value}
 
-    var PublishYear: Date
+    var PublishYear: LocalDate
         get() = this.publishYear
         set(value) {this.publishYear = value}
 
     var Author: String
-        get() = this.Author
-        set(value) {this.Author = value}
+        get() = this.author
+        set(value) {this.author = value}
+
+    var Country: String
+        get() = this.country
+        set(value) {this.country = value}
+
+    var Genre: String
+        get() = this.genre
+        set(value) {this.genre = value}
 
     var Status: Boolean
         get() = this.status

@@ -20,9 +20,16 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
+        //Calls the activity RegisterBooksActivity
         val btnNewScreen = findViewById<Button>(R.id.btnIngresar)
         btnNewScreen.setOnClickListener(View.OnClickListener { view ->
             Util.openActivity(this, RegisterBooksActivity:: class.java)
+        })
+
+        //Calls the activity BookListActivity
+        val btnNewScreen2 = findViewById<Button>(R.id.btnBooks)
+        btnNewScreen2.setOnClickListener(View.OnClickListener { view ->
+            Util.openActivity(this, BookListActivity:: class.java)
         })
     }
 }
