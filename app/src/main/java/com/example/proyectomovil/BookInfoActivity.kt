@@ -4,7 +4,11 @@ import Controller.BookController
 import Entity.Book
 import Util.Util
 import android.app.DatePickerDialog
+import android.content.Intent
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -26,6 +30,9 @@ class BookInfoActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener
     private lateinit var lbPublishYear: TextView
     private lateinit var btnSelectDate: ImageButton
     private lateinit var txtCountry: EditText
+    private lateinit var ivBookImage2: ImageView
+    private lateinit var btnPickImage2: Button
+    private var selectedImageBitmap: Bitmap? = null
     private lateinit var state: EditText
 
     private lateinit var menuItemDelete: MenuItem
@@ -48,43 +55,51 @@ class BookInfoActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setHomeButtonEnabled(true)
 
+        bookController = BookController(this)
+
+        ivBookImage2 = findViewById(R.id.ivBookImage2)
+        btnPickImage2 = findViewById(R.id.btnPickImage2)
+
+        txtId = findViewById(R.id.textId2)
+        txtName = findViewById(R.id.textBookName2)
+        txtAuthor = findViewById(R.id.textAuthor2)
+        txtGenre = findViewById(R.id.textGenre2)
+        lbPublishYear = findViewById(R.id.lbPublishYear2)
+        btnSelectDate = findViewById(R.id.btnSelectDate2)
+        txtCountry = findViewById(R.id.textCountry2)
+
+        val btnUpdateBook = findViewById<Button>(R.id.btnUpdate)
+        btnUpdateBook.setOnClickListener { updateBook() }
+
+        txtId.isEnabled = false
+        resetDay()
+
+        currentId = intent.getStringExtra("BOOK_ID") ?: ""
+        if (currentId.isBlank()) {
+            Toast.makeText(this, "No se recibió el ID del libro", Toast.LENGTH_LONG).show()
+            finish()
+            return
+        }
+
+        loadBook(currentId)
+
+        // DatePicker
+        btnSelectDate.setOnClickListener { showDatePickerDialog() }
+
+
+        btnPickImage2.setOnClickListener {
+            val intent = Intent(Intent.ACTION_PICK).apply { type = "image/*" }
+            startActivityForResult(intent, 100)
+        }
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-
-            bookController = BookController(this)
-
-            txtId = findViewById(R.id.textId2)
-            txtName = findViewById(R.id.textBookName2)
-            txtAuthor = findViewById(R.id.textAuthor2)
-            txtGenre = findViewById(R.id.textGenre2)
-            lbPublishYear = findViewById(R.id.lbPublishYear2)
-            btnSelectDate = findViewById(R.id.btnSelectDate2)
-            txtCountry = findViewById(R.id.textCountry2)
-
-            val btnUpdateBook = findViewById<Button>(R.id.btnUpdate)
-            btnUpdateBook.setOnClickListener { updateBook() }
-
-            txtId.isEnabled = false
-            resetDay()
-            currentId = intent.getStringExtra("BOOK_ID") ?: ""
-
-            if (currentId.isBlank()) {
-                Toast.makeText(this, "No se recibió el ID del libro", Toast.LENGTH_LONG).show()
-                finish()
-            }
-
-            //Load book data
-            loadBook(currentId)
-
-            //DatePicker
-            btnSelectDate.setOnClickListener { showDatePickerDialog() }
-
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
     }
 
-    //Load book from the controller and fil the activity
+    // Load book from the controller
     private fun loadBook(id: String) {
         try {
             val book = bookController.getById(id) ?: throw Exception(getString(R.string.MsgDataNotFound))
@@ -96,8 +111,21 @@ class BookInfoActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener
         }
     }
 
-    // Filling spaces of book
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 100 && resultCode == RESULT_OK && data != null) {
+            val imageUri: Uri? = data.data
+            val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, imageUri)
+            ivBookImage2.setImageBitmap(bitmap)
+            selectedImageBitmap = bitmap
+        }
+    }
+
+    // Fill activity with data
     private fun populateFrom(book: Book) {
+        ivBookImage2.setImageBitmap(book.Image)
+        selectedImageBitmap = book.Image
+
         txtId.setText(book.Id)
         txtName.setText(book.Name)
         txtAuthor.setText(book.Author)
@@ -117,8 +145,7 @@ class BookInfoActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener
 
     //Checks if any space is empty
     fun isValidationData(): Boolean {
-        val dateparse =
-            Util.parseStringToDateModern(lbPublishYear.text.toString(), "dd/MM/yyyy")
+        val dateparse = Util.parseStringToDateModern(lbPublishYear.text.toString(), "dd/MM/yyyy")
         return txtId.text.trim().isNotEmpty() && txtName.text.trim().isNotEmpty()
                 && txtAuthor.text.trim().isNotEmpty() && txtGenre.text.trim().isNotEmpty()
                 && lbPublishYear.text.trim().isNotEmpty() && txtCountry.text.trim().isNotEmpty()
@@ -130,61 +157,45 @@ class BookInfoActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener
         try {
             if (isValidationData()) {
                 val book = Book()
+                book.Image = selectedImageBitmap ?: currentBook?.Image
+
                 book.Id = txtId.text.toString()
                 book.Name = txtName.text.toString()
                 book.Author = txtAuthor.text.toString()
                 book.Status = true
                 book.Genre = txtGenre.text.toString()
                 book.Country = txtCountry.text.toString()
+
                 val bDateParse = Util.parseStringToDateModern(
                     lbPublishYear.text.toString(),
                     "dd/MM/yyyy"
                 )
                 book.PublishYear = LocalDate.of(
-                    bDateParse?.year!!,
+                    bDateParse!!.year,
                     bDateParse.month.value,
                     bDateParse.dayOfMonth
                 )
 
-                if (IsEditMode == false) {
-                    bookController.updateBook(book)
-                }
-                Toast.makeText(
-                    this,
-                    getString(R.string.MsgUpdateSucces),
-                    Toast.LENGTH_LONG
-                ).show()
+                bookController.updateBook(book)
+
+                Toast.makeText(this, getString(R.string.MsgUpdateSucces), Toast.LENGTH_LONG).show()
 
             } else {
-                Toast.makeText(
-                    this,
-                    "Datos incompletos",
-                    Toast.LENGTH_LONG
-                ).show()
+                Toast.makeText(this, "Datos incompletos", Toast.LENGTH_LONG).show()
             }
-        } catch (e: Exception) {
-            Toast.makeText(
-                this,
-                e.message.toString(),
-                Toast.LENGTH_LONG
-            ).show()
-        }
-    }
-
-    //Delete book in activity
-    fun deleteBook() {
-        try {
-            bookController.removeBook(txtId.text.trim().toString())
-            Toast.makeText(
-                this,
-                getString(R.string.MsgDeleteSuccess),
-                Toast.LENGTH_LONG
-            ).show()
         } catch (e: Exception) {
             Toast.makeText(this, e.message.toString(), Toast.LENGTH_LONG).show()
         }
     }
 
+    fun deleteBook() {
+        try {
+            bookController.removeBook(txtId.text.trim().toString())
+            Toast.makeText(this, getString(R.string.MsgDeleteSuccess), Toast.LENGTH_LONG).show()
+        } catch (e: Exception) {
+            Toast.makeText(this, e.message.toString(), Toast.LENGTH_LONG).show()
+        }
+    }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         val inflater: MenuInflater = menuInflater
@@ -211,7 +222,7 @@ class BookInfoActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener
         }
     }
 
-    //DatePicker to reset the dates
+    // ---------- DatePicker ----------
     private fun resetDay() {
         val c = Calendar.getInstance()
         year = c.get(Calendar.YEAR)
@@ -219,7 +230,6 @@ class BookInfoActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener
         day = c.get(Calendar.DAY_OF_MONTH)
     }
 
-    //Gets the dates
     private fun getDateString(dayValue: Int, monthValue: Int, yearValue: Int): String {
         val dd = if (dayValue < 10) "0$dayValue" else "$dayValue"
         val mm = if (monthValue < 10) "0$monthValue" else "$monthValue"
@@ -233,14 +243,12 @@ class BookInfoActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener
         this.day = dayOfMonth
     }
 
-    //Shows the datePicker with a new range of dates
     private fun showDatePickerDialog() {
         val dialog = DatePickerDialog(this, this, year, month, day)
         val min = Calendar.getInstance().apply { set(1300, Calendar.JANUARY, 1) }
         val max = Calendar.getInstance().apply { set(2100, Calendar.DECEMBER, 31) }
         dialog.datePicker.minDate = min.timeInMillis
         dialog.datePicker.maxDate = max.timeInMillis
-
         dialog.show()
     }
 }
