@@ -34,4 +34,14 @@ object MemoryDataManager: IDataManager {
         return if (result.any()) result[0] else null
     }
 
+    override fun getByGenre(genre: String): Book? {
+        val result = bookList.filter { it.Genre.trim() == genre.trim() }
+        return if(result.any()) result[0] else null
+    }
+
+    override fun getByCountry(country: String): Book? {
+        val result = bookList.filter { it.Country.trim() == country.trim() }
+        return if (result.any()) result[0] else null
+    }
+
 }

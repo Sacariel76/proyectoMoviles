@@ -1,10 +1,45 @@
 <resources>
-    <string name="app_name">proyectoMovil</string>
+    <!--Project title-->
+    <string name="app_name">MiBiblioteca</string>
+
+    <!--Error Messages-->
     <string name="ErrorMsgAdd">Error al agregar un libro</string>
     <string name="ErrorMsgUpdate">Error al actualizar el libro</string>
     <string name="ErrorMsgRemove">Error al remover el libro</string>
     <string name="ErrorMsgGetAll">Error al obtener la lista de datos</string>
     <string name="ErrorMsgGetById">Error al obtener un dato especifico</string>
     <string name="ErrorMsgGetByAuthor">Error al obtener libro por autor</string>
+    <string name="ErrorMsgGetByName">Error al obtener el libro por nombre</string>
+    <string name="ErrorMsgGetByGenre">Error al obtener el libro por género</string>
+    <string name="ErrorMsgGetByCountry">Error al obtener el libro por país</string>
+
+    <!--Not found-->
     <string name="MsgDataNotFound">El libro no fue encontrado</string>
+
+    <!--Text Views-->
+    <string name="txtId">ID</string>
+    <string name="txtBookName">Nombre del libro</string>
+    <string name="txtAuthor">Nombre del autor</string>
+    <string name="txtPublishYear">Año de publicación</string>
+    <string name="txtImage">Imagen</string>
+    <string name="txtCountry">Pais</string>
+    <string name="txtGenre">Genero</string>
+    <string name="txtStatus">Estado</string>
+    <string name="TextYes">Si</string>
+    <string name="TextNo">No</string>
+    <string name="TextTitleDialogQuestion">Pregunta...</string>
+    <string name="TextDeleteQuestion">Desea eliminar el libro?</string>
+
+    <!--Buttons-->
+    <string name="btnRegistrar">Registrar libro</string>
+    <string name="btnUpdateBook">Modificar libro</string>
+    <string name="btnBorrar">Borrar libro</string>
+    <string name="btnVer">Libros</string>
+    <string name="btnRegistrarLibro">Registrar libro</string>
+
+    <!--Messages-->
+    <string name="MsgSaveSuccess">Libro registrado con exito</string>
+    <string name="MsgDuplicateData">Libro duplicado</string>
+    <string name="MsgUpdateSucces">Libro se ha actualizado con exito</string>
+    <string name="MsgDeleteSuccess">Libro elimnado con exito</string>
 </resources>
