@@ -78,7 +78,7 @@ class BookListActivity : AppCompatActivity() {
             gravity = Gravity.CENTER_VERTICAL
         }
 
-        // Contenedor horizontal (imagen + texto)
+        // Horizontal Container  (image + text)
         val container = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
@@ -87,12 +87,12 @@ class BookListActivity : AppCompatActivity() {
                 TableRow.LayoutParams.MATCH_PARENT,
                 TableRow.LayoutParams.WRAP_CONTENT
             )
-            setBackgroundResource(android.R.drawable.btn_default) // efecto de clic tipo botón
+            setBackgroundResource(android.R.drawable.btn_default)
             isClickable = true
             isFocusable = true
         }
 
-        // Miniatura
+        // Miniature
         val thumbSize = dp(56)
         val iv = ImageView(this).apply {
             layoutParams = LinearLayout.LayoutParams(thumbSize, thumbSize).apply {
@@ -102,13 +102,13 @@ class BookListActivity : AppCompatActivity() {
             setBackgroundColor(0xFFBDBDBD.toInt())
         }
 
-        // Si tiene imagen guardada en el objeto Book
+        //If it already has an image
         book.Image?.let { bmp ->
             val scaled = Bitmap.createScaledBitmap(bmp, thumbSize, thumbSize, true)
             iv.setImageBitmap(scaled)
         }
 
-        // Texto con nombre + autor
+        // Text with name + author
         val tv = TextView(this).apply {
             text = "${book.Name}\n${book.Author}"
             textSize = 16f
