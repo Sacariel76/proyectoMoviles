@@ -42,4 +42,5 @@
     <string name="MsgDuplicateData">Libro duplicado</string>
     <string name="MsgUpdateSucces">Libro se ha actualizado con exito</string>
     <string name="MsgDeleteSuccess">Libro elimnado con exito</string>
+    <string name="btnAddImage">Agregar imagen</string>
 </resources>

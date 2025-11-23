@@ -8,173 +8,211 @@
     android:background="#EFE79B"
     tools:context=".BookInfoActivity">
 
+    <!-- Formulario centrado -->
     <TableLayout
         android:id="@+id/tableLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="80dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
-        android:background="#EBE49B"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="24dp"
+        android:gravity="center"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/btnUpdate">
 
+        <!-- Fila de imagen y botón -->
+        <TableRow
+            android:id="@+id/rowImageHeader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:padding="8dp">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center">
+
+                <ImageView
+                    android:id="@+id/ivBookImage2"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:layout_marginEnd="12dp"
+                    android:background="@android:color/darker_gray"
+                    android:scaleType="centerCrop"
+                    android:src="@android:drawable/ic_menu_gallery"
+                    android:contentDescription="@string/app_name" />
+
+                <Button
+                    android:id="@+id/btnPickImage2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/btnAddImage" />
+            </LinearLayout>
+        </TableRow>
+
+        <!-- ID -->
         <TableRow
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:padding="4dp">
 
             <TextView
                 android:id="@+id/textView3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/txtId" />
+                android:text="@string/txtId"
+                android:layout_marginEnd="16dp" />
 
             <EditText
                 android:id="@+id/textId2"
-                android:layout_width="wrap_content"
+                android:layout_width="200dp"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="-100dp"
                 android:ems="10"
                 android:inputType="text" />
         </TableRow>
 
+        <!-- Nombre del libro -->
         <TableRow
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:padding="4dp">
 
             <TextView
                 android:id="@+id/textView5"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/txtBookName" />
+                android:text="@string/txtBookName"
+                android:layout_marginEnd="16dp" />
 
             <EditText
                 android:id="@+id/textBookName2"
-                android:layout_width="wrap_content"
+                android:layout_width="200dp"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="-100dp"
                 android:ems="10"
                 android:inputType="text" />
         </TableRow>
 
+        <!-- Autor -->
         <TableRow
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:padding="4dp">
 
             <TextView
                 android:id="@+id/textView6"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/txtAuthor" />
+                android:text="@string/txtAuthor"
+                android:layout_marginEnd="16dp" />
 
             <EditText
                 android:id="@+id/textAuthor2"
-                android:layout_width="wrap_content"
+                android:layout_width="200dp"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="-100dp"
                 android:ems="10"
                 android:inputType="text" />
         </TableRow>
 
+        <!-- Género -->
         <TableRow
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:padding="4dp">
 
             <TextView
                 android:id="@+id/textView2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/txtGenre" />
+                android:text="@string/txtGenre"
+                android:layout_marginEnd="16dp" />
 
             <EditText
                 android:id="@+id/textGenre2"
-                android:layout_width="wrap_content"
+                android:layout_width="200dp"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="-100dp"
                 android:ems="10"
                 android:inputType="text" />
-
         </TableRow>
 
-        <!--
+        <!-- Año de publicación -->
         <TableRow
             android:layout_width="match_parent"
-            android:layout_height="match_parent" >
-
-            <TextView
-                android:id="@+id/textView19"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/txtStatus" />
-
-            <Spinner
-                android:id="@+id/spnStatus"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:spinnerMode="dropdown" />
-        </TableRow>
-        -->
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:padding="4dp">
 
             <TextView
                 android:id="@+id/textView7"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/txtPublishYear" />
+                android:text="@string/txtPublishYear"
+                android:layout_marginEnd="16dp" />
 
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="50dp">
+            <!-- Sustituimos el TableRow anidado por un LinearLayout para alinear mejor -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
                 <TextView
                     android:id="@+id/lbPublishYear2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="40dp" />
+                    android:layout_marginEnd="8dp" />
 
                 <ImageButton
                     android:id="@+id/btnSelectDate2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_marginLeft="60dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@null"
                     app:srcCompat="@android:drawable/ic_menu_my_calendar" />
-            </TableRow>
-
+            </LinearLayout>
         </TableRow>
 
+        <!-- País -->
         <TableRow
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:padding="4dp">
 
             <TextView
                 android:id="@+id/textView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/txtCountry" />
+                android:text="@string/txtCountry"
+                android:layout_marginEnd="16dp" />
 
             <EditText
                 android:id="@+id/textCountry2"
-                android:layout_width="wrap_content"
+                android:layout_width="200dp"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="-100dp"
                 android:ems="10"
                 android:inputType="text" />
-
         </TableRow>
-
     </TableLayout>
 
+    <!-- Botón centrado -->
     <Button
         android:id="@+id/btnUpdate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
         android:text="@string/btnUpdateBook"
-        app:layout_constraintBottom_toBottomOf="@+id/tableLayout"
-        app:layout_constraintEnd_toEndOf="@+id/tableLayout"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/tableLayout" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
