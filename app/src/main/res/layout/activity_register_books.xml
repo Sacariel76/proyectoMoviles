@@ -57,23 +57,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:padding="4dp">
-
-            <TextView
-                android:id="@+id/textView3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/txtId"
-                android:layout_marginEnd="16dp" />
-
-            <EditText
-                android:id="@+id/textId"
-                android:layout_width="200dp"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="-100dp"
-                android:ems="10"
-                android:inputType="text" />
-        </TableRow>
+            android:padding="4dp"/>
 
         <!-- Nombre del libro -->
         <TableRow
