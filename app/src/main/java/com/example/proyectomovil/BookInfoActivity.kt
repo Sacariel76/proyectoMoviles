@@ -17,10 +17,15 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.bumptech.glide.Glide
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import java.time.LocalDate
 import java.util.Calendar
 
 class BookInfoActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
+
+    private val db = FirebaseFirestore.getInstance()
 
     // Views
     private lateinit var txtId: EditText
@@ -32,20 +37,23 @@ class BookInfoActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener
     private lateinit var txtCountry: EditText
     private lateinit var ivBookImage2: ImageView
     private lateinit var btnPickImage2: Button
-    private var selectedImageBitmap: Bitmap? = null
-    private lateinit var state: EditText
-
     private lateinit var menuItemDelete: MenuItem
 
-    private var IsEditMode: Boolean = false
+    // Remote data
+    private lateinit var bookDocId: String
+    private var currentImageUrl: String? = null
+    private var pendingImageUri: Uri? = null
 
+    // Local data
+    private var selectedImageBitmap: Bitmap? = null
+    private lateinit var bookController: BookController
+
+    // Date for DatePicker
     private var day: Int = 1
     private var month: Int = 0 // 0-based
     private var year: Int = 2000
 
-    private lateinit var bookController: BookController
-    private var currentBook: Book? = null
-    private var currentId: String = ""
+    private var isEditMode: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,19 +82,21 @@ class BookInfoActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener
         txtId.isEnabled = false
         resetDay()
 
-        currentId = intent.getStringExtra("BOOK_ID") ?: ""
-        if (currentId.isBlank()) {
-            Toast.makeText(this, "No se recibió el ID del libro", Toast.LENGTH_LONG).show()
+        // Document ID
+        bookDocId = intent.getStringExtra("bookDocId") ?: ""
+        if (bookDocId.isBlank()) {
+            Toast.makeText(this, "No se pudo obtener el ID del libro", Toast.LENGTH_LONG).show()
             finish()
             return
         }
 
-        loadBook(currentId)
+        // Load data from Firestore
+        loadBookData()
 
         // DatePicker
         btnSelectDate.setOnClickListener { showDatePickerDialog() }
 
-
+        // Image selector
         btnPickImage2.setOnClickListener {
             val intent = Intent(Intent.ACTION_PICK).apply { type = "image/*" }
             startActivityForResult(intent, 100)
@@ -99,109 +109,237 @@ class BookInfoActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener
         }
     }
 
-    // Load book from the controller
-    private fun loadBook(id: String) {
-        try {
-            val book = bookController.getById(id) ?: throw Exception(getString(R.string.MsgDataNotFound))
-            currentBook = book
-            populateFrom(book)
-        } catch (e: Exception) {
-            Toast.makeText(this, e.message ?: "No se pudo cargar el libro", Toast.LENGTH_LONG).show()
-            finish()
-        }
+    // Load book data from Firestore
+    private fun loadBookData() {
+        api.ApiClient.bookApi.getBook(bookDocId)
+            .enqueue(object : retrofit2.Callback<api.BookApiModel> {
+                override fun onResponse(
+                    call: retrofit2.Call<api.BookApiModel>,
+                    response: retrofit2.Response<api.BookApiModel>
+                ) {
+                    if (!response.isSuccessful || response.body() == null) {
+                        Toast.makeText(this@BookInfoActivity, "Error al cargar libro", Toast.LENGTH_SHORT).show()
+                        finish()
+                        return
+                    }
+
+                    val book = response.body()!!
+
+                    txtId.setText(book.id ?: "")
+                    txtName.setText(book.name)
+                    txtAuthor.setText(book.author)
+                    txtCountry.setText(book.country)
+                    txtGenre.setText(book.genre)
+                    lbPublishYear.text = book.publishYear
+
+                    // update DatePicker internal values
+                    val parts = book.publishYear.split("/")
+                    if (parts.size == 3) {
+                        day = parts[0].toInt()
+                        month = parts[1].toInt() - 1
+                        year = parts[2].toInt()
+                    }
+
+                    currentImageUrl = book.imageUrl
+                    currentImageUrl?.let { url ->
+                        Glide.with(this@BookInfoActivity)
+                            .load(url)
+                            .placeholder(android.R.drawable.ic_menu_gallery)
+                            .into(ivBookImage2)
+                    }
+
+                    // Enable edit mode so delete menu item is visible
+                    isEditMode = true
+                    invalidateOptionsMenu()
+                }
+
+                override fun onFailure(
+                    call: retrofit2.Call<api.BookApiModel>,
+                    t: Throwable
+                ) {
+                    Toast.makeText(
+                        this@BookInfoActivity,
+                        "Error al cargar libro: ${t.localizedMessage}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    finish()
+                }
+            })
     }
 
+    // Image selection
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 100 && resultCode == RESULT_OK && data != null) {
             val imageUri: Uri? = data.data
-            val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, imageUri)
-            ivBookImage2.setImageBitmap(bitmap)
-            selectedImageBitmap = bitmap
-        }
-    }
-
-    // Fill activity with data
-    private fun populateFrom(book: Book) {
-        ivBookImage2.setImageBitmap(book.Image)
-        selectedImageBitmap = book.Image
-
-        txtId.setText(book.Id)
-        txtName.setText(book.Name)
-        txtAuthor.setText(book.Author)
-        txtGenre.setText(book.Genre)
-        txtCountry.setText(book.Country)
-
-        val date = book.PublishYear
-        lbPublishYear.text = getDateString(date.dayOfMonth, date.month.value, date.year)
-
-        year = date.year
-        month = date.month.value - 1 // 0-based
-        day = date.dayOfMonth
-
-        IsEditMode = true
-        invalidateOptionsMenu()
-    }
-
-    //Checks if any space is empty
-    fun isValidationData(): Boolean {
-        val dateparse = Util.parseStringToDateModern(lbPublishYear.text.toString(), "dd/MM/yyyy")
-        return txtId.text.trim().isNotEmpty() && txtName.text.trim().isNotEmpty()
-                && txtAuthor.text.trim().isNotEmpty() && txtGenre.text.trim().isNotEmpty()
-                && lbPublishYear.text.trim().isNotEmpty() && txtCountry.text.trim().isNotEmpty()
-                && dateparse != null
-    }
-
-    //Calls other functions to verify data and updates books
-    fun updateBook() {
-        try {
-            if (isValidationData()) {
-                val book = Book()
-                book.Image = selectedImageBitmap ?: currentBook?.Image
-
-                book.Id = txtId.text.toString()
-                book.Name = txtName.text.toString()
-                book.Author = txtAuthor.text.toString()
-                book.Status = true
-                book.Genre = txtGenre.text.toString()
-                book.Country = txtCountry.text.toString()
-
-                val bDateParse = Util.parseStringToDateModern(
-                    lbPublishYear.text.toString(),
-                    "dd/MM/yyyy"
-                )
-                book.PublishYear = LocalDate.of(
-                    bDateParse!!.year,
-                    bDateParse.month.value,
-                    bDateParse.dayOfMonth
-                )
-
-                bookController.updateBook(book)
-
-                Toast.makeText(this, getString(R.string.MsgUpdateSucces), Toast.LENGTH_LONG).show()
-
-            } else {
-                Toast.makeText(this, "Datos incompletos", Toast.LENGTH_LONG).show()
+            if (imageUri != null) {
+                val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, imageUri)
+                ivBookImage2.setImageBitmap(bitmap)
+                selectedImageBitmap = bitmap
+                pendingImageUri = imageUri   // 👈 marcar que hay imagen nueva para subir
             }
-        } catch (e: Exception) {
-            Toast.makeText(this, e.message.toString(), Toast.LENGTH_LONG).show()
         }
     }
 
-    fun deleteBook() {
-        try {
-            bookController.removeBook(txtId.text.trim().toString())
-            Toast.makeText(this, getString(R.string.MsgDeleteSuccess), Toast.LENGTH_LONG).show()
-        } catch (e: Exception) {
-            Toast.makeText(this, e.message.toString(), Toast.LENGTH_LONG).show()
-        }
+    // Validation
+    private fun isValidationData(): Boolean {
+        val dateparse = Util.parseStringToDateModern(lbPublishYear.text.toString(), "dd/MM/yyyy")
+        return txtId.text.trim().isNotEmpty() &&
+                txtName.text.trim().isNotEmpty() &&
+                txtAuthor.text.trim().isNotEmpty() &&
+                txtGenre.text.trim().isNotEmpty() &&
+                lbPublishYear.text.trim().isNotEmpty() &&
+                txtCountry.text.trim().isNotEmpty() &&
+                dateparse != null
     }
 
+    // Update the book
+    private fun updateBook() {
+        if (!isValidationData()) {
+            Toast.makeText(this, "Datos incompletos", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        val name = txtName.text.toString().trim()
+        val author = txtAuthor.text.toString().trim()
+        val country = txtCountry.text.toString().trim()
+        val genre = txtGenre.text.toString().trim()
+        val publishYearText = lbPublishYear.text.toString().trim()
+
+        // Por ahora usamos la imagenUrl ya guardada (no estamos subiendo nueva desde aquí)
+        val imageUrlToSend = currentImageUrl
+
+        val bookApiModel = api.BookApiModel(
+            id = bookDocId,
+            status = true,
+            name = name,
+            author = author,
+            genre = genre,
+            country = country,
+            publishYear = publishYearText,
+            imageUrl = imageUrlToSend
+        )
+
+        api.ApiClient.bookApi.updateBook(bookDocId, bookApiModel)
+            .enqueue(object : retrofit2.Callback<api.BookApiModel> {
+                override fun onResponse(
+                    call: retrofit2.Call<api.BookApiModel>,
+                    response: retrofit2.Response<api.BookApiModel>
+                ) {
+                    if (response.isSuccessful) {
+                        Toast.makeText(
+                            this@BookInfoActivity,
+                            "Libro actualizado en la API",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        finish()
+                    } else {
+                        Toast.makeText(
+                            this@BookInfoActivity,
+                            "Error al actualizar: ${response.code()}",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
+
+                override fun onFailure(
+                    call: retrofit2.Call<api.BookApiModel>,
+                    t: Throwable
+                ) {
+                    Toast.makeText(
+                        this@BookInfoActivity,
+                        "Fallo al llamar API: ${t.localizedMessage}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            })
+    }
+
+    // ---------- Upload image and updates Firestore ----------
+    private fun uploadImageAndUpdate(updates: MutableMap<String, Any>) {
+        val fileUri = pendingImageUri ?: return
+
+        val storageRef = FirebaseStorage.getInstance()
+            .reference
+            .child("bookImages/$bookDocId.jpg")
+
+        storageRef.putFile(fileUri)
+            .continueWithTask { task ->
+                if (!task.isSuccessful) {
+                    throw task.exception ?: Exception("Error al subir imagen")
+                }
+                storageRef.downloadUrl
+            }
+            .addOnSuccessListener { uri ->
+                currentImageUrl = uri.toString()
+                updates["imageUrl"] = currentImageUrl!!
+                pendingImageUri = null
+                updateBookInFirestore(updates)
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "Error al subir imagen", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    // Updating document in Firestore
+    private fun updateBookInFirestore(updates: Map<String, Any>) {
+        db.collection("books")
+            .document(bookDocId)
+            .update(updates)
+            .addOnSuccessListener {
+                Toast.makeText(this, "Libro actualizado", Toast.LENGTH_SHORT).show()
+                finish()
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "Error al actualizar en Firestore", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    // Delete book (local + Firestore + Storage)
+    private fun deleteBook() {
+        api.ApiClient.bookApi.deleteBook(bookDocId)
+            .enqueue(object : retrofit2.Callback<Void> {
+                override fun onResponse(
+                    call: retrofit2.Call<Void>,
+                    response: retrofit2.Response<Void>
+                ) {
+                    if (response.isSuccessful) {
+                        // si querés, también borrás local con bookController
+                        bookController.removeBook(txtId.text.trim().toString())
+                        Toast.makeText(
+                            this@BookInfoActivity,
+                            getString(R.string.MsgDeleteSuccess),
+                            Toast.LENGTH_LONG
+                        ).show()
+                        finish()
+                    } else {
+                        Toast.makeText(
+                            this@BookInfoActivity,
+                            "Error al eliminar en API: ${response.code()}",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
+
+                override fun onFailure(
+                    call: retrofit2.Call<Void>,
+                    t: Throwable
+                ) {
+                    Toast.makeText(
+                        this@BookInfoActivity,
+                        "Fallo al llamar API: ${t.localizedMessage}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            })
+    }
+
+    // Menu
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         val inflater: MenuInflater = menuInflater
         inflater.inflate(R.menu.menu_crud, menu)
         menuItemDelete = menu!!.findItem(R.id.menuDelete)
-        menuItemDelete.isVisible = IsEditMode
+        menuItemDelete.isVisible = isEditMode
         return true
     }
 
@@ -222,7 +360,7 @@ class BookInfoActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener
         }
     }
 
-    // ---------- DatePicker ----------
+    // Datepicker
     private fun resetDay() {
         val c = Calendar.getInstance()
         year = c.get(Calendar.YEAR)
