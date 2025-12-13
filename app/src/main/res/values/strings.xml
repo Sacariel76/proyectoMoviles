@@ -43,4 +43,20 @@
     <string name="MsgUpdateSucces">Libro se ha actualizado con exito</string>
     <string name="MsgDeleteSuccess">Libro elimnado con exito</string>
     <string name="btnAddImage">Agregar imagen</string>
+
+    <!--API Messages-->
+    <string name="ApiErrorConnection">No se pudo conectar con el servidor</string>
+    <string name="ApiErrorTimeout">La conexión tardó demasiado</string>
+    <string name="ApiErrorResponse">Respuesta inválida del servidor</string>
+    <string name="ApiErrorUnknown">Error desconocido en la comunicación</string>
+
+    <string name="ApiLoading">Cargando información...</string>
+    <string name="ApiEmptyResponse">El servidor no devolvió datos</string>
+
+    <string name="ApiSuccessAdd">Libro agregado correctamente</string>
+    <string name="ApiSuccessUpdate">Libro actualizado correctamente</string>
+    <string name="ApiSuccessDelete">Libro eliminado correctamente</string>
+
+    <string name="ApiRequestRetry">Reintentando solicitud...</string>
+
 </resources>
