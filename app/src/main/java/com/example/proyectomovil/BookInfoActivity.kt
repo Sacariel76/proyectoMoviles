@@ -85,7 +85,7 @@ class BookInfoActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener
         // Document ID
         bookDocId = intent.getStringExtra("bookDocId") ?: ""
         if (bookDocId.isBlank()) {
-            Toast.makeText(this, "No se pudo obtener el ID del libro", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, getString(R.string.ErrorMsgGetById), Toast.LENGTH_LONG).show()
             finish()
             return
         }
@@ -111,6 +111,8 @@ class BookInfoActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener
 
     // Load book data from Firestore
     private fun loadBookData() {
+        Toast.makeText(this, getString(R.string.ApiLoading), Toast.LENGTH_SHORT).show()
+
         api.ApiClient.bookApi.getBook(bookDocId)
             .enqueue(object : retrofit2.Callback<api.BookApiModel> {
                 override fun onResponse(
@@ -118,7 +120,11 @@ class BookInfoActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener
                     response: retrofit2.Response<api.BookApiModel>
                 ) {
                     if (!response.isSuccessful || response.body() == null) {
-                        Toast.makeText(this@BookInfoActivity, "Error al cargar libro", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            this@BookInfoActivity,
+                            getString(R.string.ErrorMsgGetById),
+                            Toast.LENGTH_SHORT
+                        ).show()
                         finish()
                         return
                     }
@@ -159,7 +165,7 @@ class BookInfoActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener
                 ) {
                     Toast.makeText(
                         this@BookInfoActivity,
-                        "Error al cargar libro: ${t.localizedMessage}",
+                        getString(R.string.ApiErrorConnection) + ": ${t.localizedMessage}",
                         Toast.LENGTH_LONG
                     ).show()
                     finish()
@@ -176,7 +182,7 @@ class BookInfoActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener
                 val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, imageUri)
                 ivBookImage2.setImageBitmap(bitmap)
                 selectedImageBitmap = bitmap
-                pendingImageUri = imageUri   // 👈 marcar que hay imagen nueva para subir
+                pendingImageUri = imageUri
             }
         }
     }
@@ -196,7 +202,7 @@ class BookInfoActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener
     // Update the book
     private fun updateBook() {
         if (!isValidationData()) {
-            Toast.makeText(this, "Datos incompletos", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, getString(R.string.ApiErrorUnknown), Toast.LENGTH_LONG).show()
             return
         }
 
@@ -206,9 +212,21 @@ class BookInfoActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener
         val genre = txtGenre.text.toString().trim()
         val publishYearText = lbPublishYear.text.toString().trim()
 
-        // Por ahora usamos la imagenUrl ya guardada (no estamos subiendo nueva desde aquí)
-        val imageUrlToSend = currentImageUrl
+        // If there is a new image, upload it first and then update the API
+        if (pendingImageUri != null) {
+            uploadImageAndUpdateApi(
+                name = name,
+                author = author,
+                country = country,
+                genre = genre,
+                publishYearText = publishYearText
+            )
+            return
+        }
 
+        Toast.makeText(this, getString(R.string.ApiLoading), Toast.LENGTH_SHORT).show()
+
+        // No new image -> use current one
         val bookApiModel = api.BookApiModel(
             id = bookDocId,
             status = true,
@@ -217,7 +235,7 @@ class BookInfoActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener
             genre = genre,
             country = country,
             publishYear = publishYearText,
-            imageUrl = imageUrlToSend
+            imageUrl = currentImageUrl
         )
 
         api.ApiClient.bookApi.updateBook(bookDocId, bookApiModel)
@@ -229,74 +247,111 @@ class BookInfoActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener
                     if (response.isSuccessful) {
                         Toast.makeText(
                             this@BookInfoActivity,
-                            "Libro actualizado en la API",
+                            getString(R.string.ApiSuccessUpdate),
                             Toast.LENGTH_SHORT
                         ).show()
                         finish()
                     } else {
                         Toast.makeText(
                             this@BookInfoActivity,
-                            "Error al actualizar: ${response.code()}",
+                            getString(R.string.ErrorMsgUpdate) + ": ${response.code()}",
                             Toast.LENGTH_LONG
                         ).show()
                     }
                 }
 
-                override fun onFailure(
-                    call: retrofit2.Call<api.BookApiModel>,
-                    t: Throwable
-                ) {
+                override fun onFailure(call: retrofit2.Call<api.BookApiModel>, t: Throwable) {
                     Toast.makeText(
                         this@BookInfoActivity,
-                        "Fallo al llamar API: ${t.localizedMessage}",
+                        getString(R.string.ApiErrorConnection) + ": ${t.localizedMessage}",
                         Toast.LENGTH_LONG
                     ).show()
                 }
             })
     }
 
-    // ---------- Upload image and updates Firestore ----------
-    private fun uploadImageAndUpdate(updates: MutableMap<String, Any>) {
+    // Upload image and updates Firestore
+    private fun uploadImageAndUpdateApi(
+        name: String,
+        author: String,
+        country: String,
+        genre: String,
+        publishYearText: String
+    ) {
         val fileUri = pendingImageUri ?: return
+
+        Toast.makeText(this, getString(R.string.ApiLoading), Toast.LENGTH_SHORT).show()
+
+        val fileName = "book_${bookDocId}_${System.currentTimeMillis()}.jpg"
 
         val storageRef = FirebaseStorage.getInstance()
             .reference
-            .child("bookImages/$bookDocId.jpg")
+            .child("bookImages/$fileName")
 
         storageRef.putFile(fileUri)
             .continueWithTask { task ->
-                if (!task.isSuccessful) {
-                    throw task.exception ?: Exception("Error al subir imagen")
-                }
+                if (!task.isSuccessful) throw task.exception ?: Exception(getString(R.string.ApiErrorResponse))
                 storageRef.downloadUrl
             }
             .addOnSuccessListener { uri ->
                 currentImageUrl = uri.toString()
-                updates["imageUrl"] = currentImageUrl!!
                 pendingImageUri = null
-                updateBookInFirestore(updates)
-            }
-            .addOnFailureListener {
-                Toast.makeText(this, "Error al subir imagen", Toast.LENGTH_SHORT).show()
-            }
-    }
 
-    // Updating document in Firestore
-    private fun updateBookInFirestore(updates: Map<String, Any>) {
-        db.collection("books")
-            .document(bookDocId)
-            .update(updates)
-            .addOnSuccessListener {
-                Toast.makeText(this, "Libro actualizado", Toast.LENGTH_SHORT).show()
-                finish()
+                val bookApiModel = api.BookApiModel(
+                    id = bookDocId,
+                    status = true,
+                    name = name,
+                    author = author,
+                    genre = genre,
+                    country = country,
+                    publishYear = publishYearText,
+                    imageUrl = currentImageUrl
+                )
+
+                api.ApiClient.bookApi.updateBook(bookDocId, bookApiModel)
+                    .enqueue(object : retrofit2.Callback<api.BookApiModel> {
+                        override fun onResponse(
+                            call: retrofit2.Call<api.BookApiModel>,
+                            response: retrofit2.Response<api.BookApiModel>
+                        ) {
+                            if (response.isSuccessful) {
+                                Toast.makeText(
+                                    this@BookInfoActivity,
+                                    getString(R.string.ApiSuccessUpdate),
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                finish()
+                            } else {
+                                Toast.makeText(
+                                    this@BookInfoActivity,
+                                    getString(R.string.ErrorMsgUpdate) + ": ${response.code()}",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }
+
+                        override fun onFailure(call: retrofit2.Call<api.BookApiModel>, t: Throwable) {
+                            Toast.makeText(
+                                this@BookInfoActivity,
+                                getString(R.string.ApiErrorConnection) + ": ${t.localizedMessage}",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    })
             }
             .addOnFailureListener {
-                Toast.makeText(this, "Error al actualizar en Firestore", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    getString(R.string.ApiErrorResponse) + ": ${it.localizedMessage}",
+                    Toast.LENGTH_LONG
+                ).show()
             }
     }
 
     // Delete book (local + Firestore + Storage)
     private fun deleteBook() {
+        Toast.makeText(this, getString(R.string.ApiLoading), Toast.LENGTH_SHORT).show()
+
         api.ApiClient.bookApi.deleteBook(bookDocId)
             .enqueue(object : retrofit2.Callback<Void> {
                 override fun onResponse(
@@ -304,18 +359,16 @@ class BookInfoActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener
                     response: retrofit2.Response<Void>
                 ) {
                     if (response.isSuccessful) {
-                        // si querés, también borrás local con bookController
-                        bookController.removeBook(txtId.text.trim().toString())
                         Toast.makeText(
                             this@BookInfoActivity,
-                            getString(R.string.MsgDeleteSuccess),
+                            getString(R.string.ApiSuccessDelete),
                             Toast.LENGTH_LONG
                         ).show()
                         finish()
                     } else {
                         Toast.makeText(
                             this@BookInfoActivity,
-                            "Error al eliminar en API: ${response.code()}",
+                            getString(R.string.ErrorMsgRemove) + ": ${response.code()}",
                             Toast.LENGTH_LONG
                         ).show()
                     }
@@ -327,7 +380,7 @@ class BookInfoActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener
                 ) {
                     Toast.makeText(
                         this@BookInfoActivity,
-                        "Fallo al llamar API: ${t.localizedMessage}",
+                        getString(R.string.ApiErrorConnection) + ": ${t.localizedMessage}",
                         Toast.LENGTH_LONG
                     ).show()
                 }

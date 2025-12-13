@@ -50,13 +50,13 @@ class RegisterBooksActivity : AppCompatActivity(), DatePickerDialog.OnDateSetLis
 
         bookController = BookController(this)
 
-        ivBookImage   = findViewById(R.id.ivBookImage)
-        btnPickImage  = findViewById(R.id.btnPickImage)
-        txtName       = findViewById(R.id.textBookName)
-        txtAuthor     = findViewById(R.id.textAuthor)
+        ivBookImage = findViewById(R.id.ivBookImage)
+        btnPickImage = findViewById(R.id.btnPickImage)
+        txtName = findViewById(R.id.textBookName)
+        txtAuthor = findViewById(R.id.textAuthor)
         lbPublishYear = findViewById(R.id.lbPublishYear)
-        txtCountry    = findViewById(R.id.textCountry)
-        txtGenre      = findViewById(R.id.textGenre)
+        txtCountry = findViewById(R.id.textCountry)
+        txtGenre = findViewById(R.id.textGenre)
 
         ResetDay()
 
@@ -102,7 +102,6 @@ class RegisterBooksActivity : AppCompatActivity(), DatePickerDialog.OnDateSetLis
 
     // Triggers the aparition of the calendar
     private fun showDatePickerDialog() {
-        // month ya viene 0-based desde ResetDay, así que se usa directo
         val datePickerDialog = DatePickerDialog(this, this, year, month, day)
 
         val minDate = Calendar.getInstance()
@@ -162,7 +161,7 @@ class RegisterBooksActivity : AppCompatActivity(), DatePickerDialog.OnDateSetLis
         )
 
         if (bDateParse == null) {
-            Toast.makeText(this, "Fecha inválida", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, getString(R.string.ApiErrorResponse), Toast.LENGTH_LONG).show()
             return
         }
 
@@ -183,7 +182,7 @@ class RegisterBooksActivity : AppCompatActivity(), DatePickerDialog.OnDateSetLis
         // Gets the publish year text in dd/MM/yyyy format
         val publishYearText = lbPublishYear.text.toString()
 
-        // Saves in Firestore + Storage (now it uploads the image to Storage and then sends data to the API)
+        // Saves in Firestore + Storage
         val bitmap = selectedImageBitmap
         if (bitmap != null) {
             val storageRef = FirebaseStorage.getInstance()
@@ -199,7 +198,7 @@ class RegisterBooksActivity : AppCompatActivity(), DatePickerDialog.OnDateSetLis
             uploadTask
                 .continueWithTask { task ->
                     if (!task.isSuccessful) {
-                        throw task.exception ?: Exception("Error uploading image")
+                        throw task.exception ?: Exception(getString(R.string.ApiErrorResponse))
                     }
                     storageRef.downloadUrl
                 }
@@ -217,7 +216,7 @@ class RegisterBooksActivity : AppCompatActivity(), DatePickerDialog.OnDateSetLis
                 .addOnFailureListener { e ->
                     Toast.makeText(
                         this,
-                        "Error uploading image: ${e.localizedMessage}",
+                        getString(R.string.ApiErrorResponse) + ": ${e.localizedMessage}",
                         Toast.LENGTH_LONG
                     ).show()
                 }
@@ -245,6 +244,8 @@ class RegisterBooksActivity : AppCompatActivity(), DatePickerDialog.OnDateSetLis
         country: String,
         publishYear: String
     ) {
+        Toast.makeText(this, getString(R.string.ApiLoading), Toast.LENGTH_SHORT).show()
+
         val bookApiModel = api.BookApiModel(
             status = status,
             name = name,
@@ -257,6 +258,7 @@ class RegisterBooksActivity : AppCompatActivity(), DatePickerDialog.OnDateSetLis
 
         api.ApiClient.bookApi.createBook(bookApiModel)
             .enqueue(object : retrofit2.Callback<api.BookApiModel> {
+
                 override fun onResponse(
                     call: retrofit2.Call<api.BookApiModel>,
                     response: retrofit2.Response<api.BookApiModel>
@@ -264,14 +266,14 @@ class RegisterBooksActivity : AppCompatActivity(), DatePickerDialog.OnDateSetLis
                     if (response.isSuccessful) {
                         Toast.makeText(
                             this@RegisterBooksActivity,
-                            "Libro registrado correctamente en la API",
+                            getString(R.string.ApiSuccessAdd),
                             Toast.LENGTH_SHORT
                         ).show()
                         cleanScreen()
                     } else {
                         Toast.makeText(
                             this@RegisterBooksActivity,
-                            "Error al registrar en API: ${response.code()}",
+                            getString(R.string.ErrorMsgAdd) + ": ${response.code()}",
                             Toast.LENGTH_LONG
                         ).show()
                     }
@@ -283,7 +285,7 @@ class RegisterBooksActivity : AppCompatActivity(), DatePickerDialog.OnDateSetLis
                 ) {
                     Toast.makeText(
                         this@RegisterBooksActivity,
-                        "Fallo al llamar API: ${t.localizedMessage}",
+                        getString(R.string.ApiErrorConnection) + ": ${t.localizedMessage}",
                         Toast.LENGTH_LONG
                     ).show()
                 }

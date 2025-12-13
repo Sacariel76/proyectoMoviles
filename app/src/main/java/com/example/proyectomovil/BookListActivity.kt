@@ -36,7 +36,6 @@ class BookListActivity : AppCompatActivity() {
     }
 
     // Loads all the existing books
-    // Now it uses the REST API instead of Firestore
     private fun loadBooks() {
         tableBooks.removeAllViews()
 
@@ -49,7 +48,7 @@ class BookListActivity : AppCompatActivity() {
                     if (!response.isSuccessful || response.body() == null) {
                         Toast.makeText(
                             this@BookListActivity,
-                            "Error al cargar libros (API response error)",
+                            getString(R.string.ErrorMsgGetAll),
                             Toast.LENGTH_SHORT
                         ).show()
                         return
@@ -57,9 +56,18 @@ class BookListActivity : AppCompatActivity() {
 
                     val books = response.body()!!
 
+                    if (books.isEmpty()) {
+                        Toast.makeText(
+                            this@BookListActivity,
+                            getString(R.string.MsgDataNotFound),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        return
+                    }
+
                     for (book in books) {
                         val id = book.id ?: continue   // if id is null, skip the row
-                        val name = book.name.ifBlank { "Sin nombre" }
+                        val name = book.name.ifBlank { getString(R.string.MsgDataNotFound) }
                         val image = book.imageUrl ?: ""
 
                         addBookRow(id, name, image)
@@ -69,7 +77,7 @@ class BookListActivity : AppCompatActivity() {
                 override fun onFailure(call: Call<List<BookApiModel>>, t: Throwable) {
                     Toast.makeText(
                         this@BookListActivity,
-                        "Error al cargar libros: ${t.localizedMessage}",
+                        getString(R.string.ApiErrorConnection) + ": ${t.localizedMessage}",
                         Toast.LENGTH_SHORT
                     ).show()
                 }

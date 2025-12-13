@@ -33,4 +33,16 @@
     <string name="MsgDeleteSuccess">Book was deleted succesfully</string>
     <string name="TextDeleteQuestion">Do you want to delete the book?</string>
     <string name="btnAddImage">Add image</string>
+    <!--API Messages-->
+    <string name="ApiErrorConnection">Could not connect to the server</string>
+    <string name="ApiErrorTimeout">The connection took too long</string>
+    <string name="ApiErrorResponse">Invalid server response</string>
+    <string name="ApiErrorUnknown">Unknown communication error</string>
+    <string name="ApiLoading">Loading information...</string>
+    <string name="ApiEmptyResponse">The server returned no data</string>
+    <string name="ApiSuccessAdd">Book added successfully</string>
+    <string name="ApiSuccessUpdate">Book updated successfully</string>
+    <string name="ApiSuccessDelete">Book deleted successfully</string>
+    <string name="ApiRequestRetry">Retrying request...</string>
+
 </resources>
